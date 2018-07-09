@@ -1,0 +1,23 @@
+{
+  "name": "practice_project",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Lavanya Ravi",
+  "license": "ISC",
+  "dependencies": {
+    "jsonwebtoken": "^8.3.0",
+    "koa": "^2.5.1",
+    "koa-auth-header": "^1.1.2",
+    "koa-bodyparser": "^4.2.1",
+    "koa-jwt": "^3.3.2",
+    "koa-logger": "^3.2.0",
+    "koa-mount": "^3.0.0",
+    "koa-route": "^3.2.0",
+    "koa-router": "^7.4.0",
+    "mongodb": "^2.2.33"
+  }
+}
