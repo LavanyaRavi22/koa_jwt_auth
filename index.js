@@ -13,29 +13,45 @@ require('./mongo')(app);
 
 const ObjectID = require("mongodb").ObjectID;
 
-securedRouter.use(jwt.errorHandler()).use(jwt.jwt());
+app.use(securedRouter.routes()).use(securedRouter.allowedMethods());
+app.use(router.routes()).use(router.allowedMethods());
+
+router.use(function(ctx,next){
+    console.log("ROUTER");
+    console.log("-- -- -- -- -- --");
+    console.log(ctx.status);
+    next();
+});
+
+securedRouter.use(function(ctx,next){
+    console.log("SECURED ROUTER");
+    console.log("-- -- -- -- -- --");
+    console.log(ctx.status);
+    if(token)
+        ctx.headers.authorization = `Bearer ${token}`;
+    next();
+});
+
+//securedRouter.use(jwt.errorHandle()).use(jwt.jwt());
+securedRouter.use(jwt.errorHandle()).use(jwt.jwt());
 app.use(BodyParser());
 app.use(Logger());
 
-var authHeader = require('koa-auth-header')({
-  required: true, // if the authorization are required, will throw a 401 if the header is not present,
-  types: {
-    // if the authorization header is Authorization: Bearer: sometoken
-    Bearer: function(value) {
-      this.request.token = token;
-    }
-  }
-});
- 
-securedRouter.use(authHeader);
-
 router.get("/", async function (ctx) {
-    let name = ctx.request.body.name || 'World';
+    let name = 'World';
+    console.log("get / -------------------------");
+    console.log(ctx.status);
     ctx.body = {message: `Hello ${name}!`}
+    console.log(ctx.status);
 });
 
-securedRouter.get("/people",async function(ctx) {
-	ctx.body = await ctx.app.people.find().toArray();
+securedRouter.get("/people",async (ctx) => {
+    console.log("In people -----------");
+    console.log(ctx);
+    console.log(ctx.body);
+    ctx.body = await ctx.app.people.find().toArray();
+    console.log(ctx.body);
+    console.log(ctx.status);
 });
 
 securedRouter.post("/people", async (ctx) => {
@@ -57,24 +73,22 @@ securedRouter.delete("/people/:id", async (ctx) => {
     ctx.body = await ctx.app.people.deleteOne(documentQuery);
 });
 
-router.post("/auth", async (ctx) => {
-    let username = ctx.request.body.username;
-    let password = ctx.request.body.password;
-
+router.get("/auth", async (ctx) => {
+    let username = ctx.request.query.username;
+    let password = ctx.request.query.password;
 // hardcode values for now
     if (username === "user" && password === "pwd") {
-	var tok = jwt.issue({user: "user", role: "admin"});
+     var tok = jwt.issue({user: "user", role: "admin"});
+   // var tok = koajwt.sign(profile, 'secret', { expiresInMinutes: 60*5 })
         token = tok;
         ctx.body = {
             token: tok
-  	}
+  	    }
     } else {
         ctx.status = 401;
         ctx.body = {error: "Invalid login"}
     }
 });
 
-app.use(router.routes()).use(router.allowedMethods());
-app.use(securedRouter.routes()).use(router.allowedMethods());
 
 app.listen(3000);
